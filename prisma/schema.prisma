@@ -1,0 +1,139 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Account {
+  id                String          @id @default(uuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?         @db.Text
+  access_token      String?         @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?         @db.Text
+  session_state     String?
+  created_at        Int?
+  gitlab_webhook    GitlabWebhook[]
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(uuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model User {
+  id            String    @id @default(uuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  role          String    @default("Editor")
+  accounts      Account[]
+  sessions      Session[]
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model GitlabWebhook {
+  id                  String         @id @default(uuid())
+  project             GitlabProject?
+  object_kind         String
+  event_name          String
+  before              String
+  after               String
+  ref                 String
+  checkout_sha        String
+  message             String?
+  user_provider       String
+  user_id             String
+  user_name           String
+  user_username       String
+  user_email          String
+  user_avatar         String
+  total_commits_count Int
+
+  account Account @relation(fields: [user_provider, user_id], references: [provider, providerAccountId])
+}
+
+model GitlabProject {
+  id                  Int    @id
+  webhookId           String @unique
+  name                String
+  description         String
+  web_url             String
+  avatar_url          String
+  git_ssh_url         String
+  git_http_url        String
+  namespace           String
+  visibility_level    String
+  path_with_namespace String
+  default_branch      String
+  ci_config_path      String
+  homepage            String
+  url                 String
+  http_url            String
+
+  webhook GitlabWebhook @relation(fields: [webhookId], references: [id])
+}
+
+model GitlabCommit {
+  id           String                 @id
+  message      String
+  title        String
+  timestamp    DateTime
+  url          String
+  author_id    String
+  author_name  String
+  author_email String
+  added        GitlabCommitAdded[]
+  modified     GitlabCommitModified[]
+  removed      GitlabCommitRemoved[]
+}
+
+model GitlabCommitAdded {
+  id       String @id @default(uuid())
+  commitId String
+  file     String
+
+  commit GitlabCommit @relation(fields: [commitId], references: [id])
+}
+
+model GitlabCommitModified {
+  id       String @id @default(uuid())
+  commitId String
+  file     String
+
+  commit GitlabCommit @relation(fields: [commitId], references: [id])
+}
+
+model GitlabCommitRemoved {
+  id       String @id @default(uuid())
+  commitId String
+  file     String
+
+  commit GitlabCommit @relation(fields: [commitId], references: [id])
+}

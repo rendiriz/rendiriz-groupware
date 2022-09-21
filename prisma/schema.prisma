@@ -46,6 +46,7 @@ model User {
   emailVerified DateTime?
   image         String?
   role          String    @default("Editor")
+  private_token String?   @db.Text
   accounts      Account[]
   sessions      Session[]
 }
@@ -60,7 +61,6 @@ model VerificationToken {
 
 model GitlabWebhook {
   id                  String         @id @default(uuid())
-  project             GitlabProject?
   object_kind         String
   event_name          String
   before              String
@@ -75,29 +75,52 @@ model GitlabWebhook {
   user_email          String
   user_avatar         String
   total_commits_count Int
+  project             GitlabProject?
 
   account Account @relation(fields: [user_provider, user_id], references: [provider, providerAccountId])
 }
 
 model GitlabProject {
-  id                  Int    @id
-  webhookId           String @unique
-  name                String
+  id                  Int              @id
+  webhookId           String           @unique
   description         String
-  web_url             String
-  avatar_url          String
-  git_ssh_url         String
-  git_http_url        String
-  namespace           String
-  visibility_level    String
+  name                String
+  name_with_namespace String
+  path                String
   path_with_namespace String
+  created_at          DateTime
   default_branch      String
-  ci_config_path      String
-  homepage            String
-  url                 String
-  http_url            String
+  ssh_url_to_repo     String
+  http_url_to_repo    String
+  web_url             String
+  readme_url          String
+  avatar_url          String
+  forks_count         Int
+  star_count          Int
+  last_activity_at    DateTime
+  namespace           GitlabNamespace?
 
   webhook GitlabWebhook @relation(fields: [webhookId], references: [id])
+}
+
+model GitlabNamespace {
+  id                     Int     @id
+  projectId              Int     @unique
+  name                   String
+  path                   String
+  kind                   String
+  full_path              String
+  parent_id              Int?
+  avatar_url             String?
+  web_url                String
+  billable_members_count Int
+  seats_in_use           Int?
+  max_seats_used         Int?
+  plan                   String?
+  trial_ends_on          String?
+  trial                  String?
+
+  project GitlabProject @relation(fields: [projectId], references: [id])
 }
 
 model GitlabCommit {

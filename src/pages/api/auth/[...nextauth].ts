@@ -5,43 +5,57 @@ import GitlabProvider from 'next-auth/providers/gitlab';
 import { PrismaAdapter } from '@next-auth/prisma-adapter';
 import { prisma } from '@/lib/prisma';
 import jwt from 'jsonwebtoken';
+import { JWT } from 'next-auth/jwt';
 
 export const authOptions: NextAuthOptions = {
   secret: process.env.NEXTAUTH_SECRET,
-  // session: {
-  //   jwt: true,
-  // },
-  // jwt: {
-  //   secret: process.env.NEXTAUTH_SECRET_JWT,
-  //   async encode({ secret, token }) {
-  //     return jwt.sign(token, secret);
-  //   },
-  //   async decode({ secret, token }) {
-  //     return jwt.verify(token, secret);
-  //   },
-  // },
-  callbacks: {
-    async jwt({ token, account }) {
-      console.log(account?.access_token);
-      console.log(token);
-      if (account) {
-        token.accessToken = account.access_token;
-      }
-      return token;
-      // const result = { ...token, accessToken: account?.accessToken };
-      // console.log(result);
-      // return Promise.resolve(result);
+  session: {
+    strategy: 'jwt',
+  },
+  jwt: {
+    secret: process.env.NEXTAUTH_SECRET,
+    encode: async ({ secret, token }) => {
+      const jwtClaims = {
+        state: token?.state,
+        id: token?.id,
+        sub: token?.sub?.toString(),
+        name: token?.name,
+        email: token?.email,
+        role: token?.role,
+        private_token: token?.private_token,
+        iat: Date.now() / 1000,
+        exp: Math.floor(Date.now() / 1000) + 24 * 60 * 60,
+      };
+      const encodedToken = jwt.sign(jwtClaims, secret, { algorithm: 'HS256' });
+      return encodedToken;
     },
-    async session({ session, token, user }) {
-      console.log(session);
-      console.log(token);
-      // console.log('USER : ', user);
-      if (session.user) {
-        session.user.id = user.id;
-        session.user.role = user.role as string;
-        session.accessToken = token?.accessToken;
+    decode: async ({ secret, token }) => {
+      const decodedToken = jwt.verify(token as string, secret, {
+        algorithms: ['HS256'],
+      });
+      return decodedToken as JWT;
+    },
+  },
+  callbacks: {
+    async jwt({ token, user }) {
+      const isUserSignedIn = user ? true : false;
+      if (isUserSignedIn) {
+        token.id = user?.id.toString();
+        token.role = user?.role;
+        token.private_token = user?.private_token;
       }
-      return session;
+      return Promise.resolve(token);
+    },
+    async session({ session, token }) {
+      const secret = process.env.NEXTAUTH_SECRET || '';
+      const encodedToken = jwt.sign(token, secret, { algorithm: 'HS256' });
+
+      if (session.user) {
+        session.user.id = token.id as string;
+        session.user.role = token.role as string;
+        session.token = encodedToken;
+      }
+      return Promise.resolve(session);
     },
   },
   adapter: PrismaAdapter(prisma),

@@ -9,15 +9,16 @@ const Home: NextPage = () => {
   let accessToken = '';
   const greeting = !session ? 'Hello!' : `Hello ${session?.user?.name}!`;
 
-  // if (session) {
-  //   accessToken = session.accessToken as string;
-  // }
+  if (session) {
+    accessToken = session.token as string;
+  }
 
   return (
     <Layout>
       <div className="mx-auto max-w-7xl px-4 my-12">
         <h1 className="text-5xl">{greeting}</h1>
         <pre>{JSON.stringify(session)}</pre>
+        <pre>{accessToken}</pre>
       </div>
     </Layout>
   );

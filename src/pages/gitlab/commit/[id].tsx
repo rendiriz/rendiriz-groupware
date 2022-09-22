@@ -1,14 +1,17 @@
 import type { NextPage } from 'next';
-import { useRouter } from 'next/router';
+import { GetStaticProps, GetStaticPaths } from 'next';
 
 import { TbChevronRight, TbFileDescription } from 'react-icons/tb';
-import useSWR, { Fetcher } from 'swr';
 import moment from 'moment';
 
 const api = process.env.NEXT_PUBLIC_SITE_URL;
 
-const GitlabCommit: NextPage = (props) => {
-  const { data } = props;
+type TGitlabCommit = {
+  commits?: any;
+};
+
+const GitlabCommit: NextPage = (props: TGitlabCommit) => {
+  const { commits: data } = props;
 
   const changes =
     data.added.length + data.modified.length + data.removed.length;
@@ -84,28 +87,30 @@ const GitlabCommit: NextPage = (props) => {
   );
 };
 
-export async function getStaticProps({ params }) {
-  const res = await fetch(`${api}/api/gitlab/commit/${params.id}`);
-  const commits = await res.json();
-  const data = await commits.data;
+export const getStaticProps: GetStaticProps = async (context) => {
+  const { params } = context;
+
+  const res = await fetch(`${api}/api/gitlab/commit/${params?.id}`);
+  const data = await res.json();
+  const commits = await data.data;
 
   return {
     props: {
-      data,
+      commits,
     },
     revalidate: 10,
   };
-}
+};
 
-export async function getStaticPaths() {
+export const getStaticPaths: GetStaticPaths = async () => {
   const res = await fetch(`${api}/api/gitlab/commit`);
-  const commits = await res.json();
-  const data = await commits.data;
+  const data = await res.json();
+  const commits = await data.data;
 
   return {
-    paths: data.map((row) => ({ params: { id: row.id } })),
+    paths: commits.map((row: any) => ({ params: { id: row.id } })),
     fallback: 'blocking',
   };
-}
+};
 
 export default GitlabCommit;

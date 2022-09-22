@@ -60,8 +60,8 @@ model VerificationToken {
 }
 
 model GitlabWebhook {
-  id                  String  @id @default(uuid())
-  projectId           Int     @unique
+  id                  String         @id @default(uuid())
+  projectId           Int            @unique
   object_kind         String
   event_name          String
   before              String
@@ -76,6 +76,7 @@ model GitlabWebhook {
   user_email          String
   user_avatar         String
   total_commits_count Int
+  commit              GitlabCommit[]
 
   account Account       @relation(fields: [user_provider, user_id], references: [provider, providerAccountId])
   project GitlabProject @relation(fields: [projectId], references: [id])
@@ -84,6 +85,7 @@ model GitlabWebhook {
 model GitlabProject {
   id                  Int            @id
   namespaceId         Int            @unique
+  groupwareProjectId  String?
   description         String
   name                String
   name_with_namespace String
@@ -124,22 +126,26 @@ model GitlabNamespace {
 
 model GitlabCommit {
   id           String                 @id
+  webhookId    String
   message      String
   title        String
   timestamp    DateTime
   url          String
-  author_id    String
+  author_id    Int
   author_name  String
   author_email String
   added        GitlabCommitAdded[]
   modified     GitlabCommitModified[]
   removed      GitlabCommitRemoved[]
+  logbook      Logbook?
+
+  webhook GitlabWebhook @relation(fields: [webhookId], references: [id])
 }
 
 model GitlabCommitAdded {
   id       String @id @default(uuid())
   commitId String
-  file     String
+  filename String
 
   commit GitlabCommit @relation(fields: [commitId], references: [id])
 }
@@ -147,7 +153,7 @@ model GitlabCommitAdded {
 model GitlabCommitModified {
   id       String @id @default(uuid())
   commitId String
-  file     String
+  filename String
 
   commit GitlabCommit @relation(fields: [commitId], references: [id])
 }
@@ -155,7 +161,23 @@ model GitlabCommitModified {
 model GitlabCommitRemoved {
   id       String @id @default(uuid())
   commitId String
-  file     String
+  filename String
+
+  commit GitlabCommit @relation(fields: [commitId], references: [id])
+}
+
+model Logbook {
+  id               String    @id @default(uuid())
+  commitId         String    @unique
+  tupoksiJabatanId String    @default("62d6421d-be8d-4390-ba5c-252108818350")
+  dateSend         DateTime?
+  difficultyTask   Int?
+  evidenceTask     String?
+  workPlace        String    @default("WFH")
+  organizerTask    String    @default("JDS")
+  isMainTask       Boolean?
+  isDocumentLink   Boolean   @default(true)
+  isStatus         String
 
   commit GitlabCommit @relation(fields: [commitId], references: [id])
 }

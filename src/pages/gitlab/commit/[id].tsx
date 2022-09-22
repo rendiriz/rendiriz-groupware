@@ -7,7 +7,9 @@ import moment from 'moment';
 
 const api = process.env.NEXT_PUBLIC_SITE_URL;
 
-const GitlabCommit: NextPage = ({ data }: { data: any }) => {
+const GitlabCommit: NextPage = (props) => {
+  const { data } = props;
+
   const changes =
     data.added.length + data.modified.length + data.removed.length;
 

@@ -29,7 +29,7 @@ const getSingle = async (
     create: data,
   });
 
-  res.status(200).json({ code: 200, result });
+  res.status(200).json({ code: 200, data: result });
 };
 
 export default async function handler(

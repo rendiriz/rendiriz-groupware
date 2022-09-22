@@ -6,12 +6,12 @@ const tokenGitlab = process.env.GITLAB_TOKEN;
 const createItem = async (req: NextApiRequest, res: NextApiResponse) => {
   const tokenXGitlab = req.headers['x-gitlab-token'];
   if (tokenGitlab !== tokenXGitlab) {
-    return res.status(401).end('Invalid token');
+    return res.status(401).json({ code: 401, message: 'Invalid token' });
   }
 
   const username = req.body.user_username;
   if (username !== 'rendiriz') {
-    return res.status(400).end('Invalid user');
+    return res.status(401).json({ code: 400, message: 'Invalid user' });
   }
 
   // Modify Body
@@ -122,7 +122,7 @@ export default async function handler(
       try {
         return createItem(req, res);
       } catch (err: any) {
-        return res.status(500).end(err.message);
+        return res.status(500).json({ code: 400, message: err.message });
       }
     default:
       res.setHeader('Allow', ['POST']);

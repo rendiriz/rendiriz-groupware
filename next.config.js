@@ -3,7 +3,7 @@ const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
   images: {
-    domains: ['placehold.co'],
+    domains: ['placehold.co', 'ik.imagekit.io'],
   },
   experimental: {
     nextScriptWorkers: true,

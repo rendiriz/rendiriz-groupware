@@ -21,10 +21,12 @@ const MyApp = ({ Component, pageProps }: AppProps<{ session: Session }>) => {
           </QueryClientProvider>
         </ThemeProvider>
       </SessionProvider>
-      <Script
-        src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA_TRACKING_ID}`}
-        strategy="worker"
-      />
+      {isProduction && (
+        <Script
+          src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA_TRACKING_ID}`}
+          strategy="worker"
+        />
+      )}
     </>
   );
 };

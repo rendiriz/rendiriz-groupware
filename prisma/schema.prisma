@@ -60,7 +60,8 @@ model VerificationToken {
 }
 
 model GitlabWebhook {
-  id                  String         @id @default(uuid())
+  id                  String  @id @default(uuid())
+  projectId           Int     @unique
   object_kind         String
   event_name          String
   before              String
@@ -75,14 +76,14 @@ model GitlabWebhook {
   user_email          String
   user_avatar         String
   total_commits_count Int
-  project             GitlabProject?
 
-  account Account @relation(fields: [user_provider, user_id], references: [provider, providerAccountId])
+  account Account       @relation(fields: [user_provider, user_id], references: [provider, providerAccountId])
+  project GitlabProject @relation(fields: [projectId], references: [id])
 }
 
 model GitlabProject {
-  id                  Int              @id
-  webhookId           String           @unique
+  id                  Int            @id
+  namespaceId         Int            @unique
   description         String
   name                String
   name_with_namespace String
@@ -94,18 +95,17 @@ model GitlabProject {
   http_url_to_repo    String
   web_url             String
   readme_url          String
-  avatar_url          String
+  avatar_url          String?
   forks_count         Int
   star_count          Int
   last_activity_at    DateTime
-  namespace           GitlabNamespace?
+  webhook             GitlabWebhook?
 
-  webhook GitlabWebhook @relation(fields: [webhookId], references: [id])
+  namespace GitlabNamespace @relation(fields: [namespaceId], references: [id])
 }
 
 model GitlabNamespace {
-  id                     Int     @id
-  projectId              Int     @unique
+  id                     Int            @id
   name                   String
   path                   String
   kind                   String
@@ -118,9 +118,8 @@ model GitlabNamespace {
   max_seats_used         Int?
   plan                   String?
   trial_ends_on          String?
-  trial                  String?
-
-  project GitlabProject @relation(fields: [projectId], references: [id])
+  trial                  Boolean?
+  project                GitlabProject?
 }
 
 model GitlabCommit {

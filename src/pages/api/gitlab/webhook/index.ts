@@ -1,4 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
+import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
 
 const tokenGitlab = process.env.GITLAB_TOKEN;
@@ -94,21 +95,25 @@ const createItem = async (req: NextApiRequest, res: NextApiResponse) => {
     },
   };
 
-  const result = await prisma.gitlabWebhook.create({
-    data: body,
-    include: {
-      commit: {
-        include: {
-          logbook: true,
-          added: true,
-          modified: true,
-          removed: true,
+  try {
+    const result = await prisma.gitlabWebhook.create({
+      data: body,
+      include: {
+        commit: {
+          include: {
+            logbook: true,
+            added: true,
+            modified: true,
+            removed: true,
+          },
         },
       },
-    },
-  });
+    });
 
-  res.status(200).json({ code: 200, data: result });
+    res.status(200).json({ code: 200, data: result });
+  } catch (e) {
+    throw e;
+  }
 };
 
 export default async function handler(
@@ -122,7 +127,7 @@ export default async function handler(
       try {
         return createItem(req, res);
       } catch (err: any) {
-        return res.status(500).json({ code: 400, message: err.message });
+        return res.status(500).json({ code: err.code, message: err.message });
       }
     default:
       res.setHeader('Allow', ['POST']);

@@ -57,7 +57,7 @@ const createItem = async (req: NextApiRequest, res: NextApiResponse) => {
     if (bodyModified.length > 0) {
       Object.assign(dataCommit, {
         modified: {
-          createMany: bodyModified,
+          create: bodyModified,
         },
       });
     }
@@ -65,7 +65,7 @@ const createItem = async (req: NextApiRequest, res: NextApiResponse) => {
     if (bodyRemoved.length > 0) {
       Object.assign(dataCommit, {
         removed: {
-          createMany: bodyRemoved,
+          create: bodyRemoved,
         },
       });
     }

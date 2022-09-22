@@ -22,6 +22,11 @@ const getList = async (
         },
       },
     },
+    orderBy: {
+      commit: {
+        timestamp: 'desc',
+      },
+    },
     include: {
       commit: {
         include: {

@@ -1,5 +1,4 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
 
 const tokenGitlab = process.env.GITLAB_TOKEN;

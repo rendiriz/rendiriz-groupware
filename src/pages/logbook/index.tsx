@@ -5,6 +5,7 @@ import { unstable_getServerSession } from 'next-auth';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import moment from 'moment';
 import { HiCheckCircle, HiXCircle } from 'react-icons/hi';
+import { FaSpinner } from 'react-icons/fa';
 import cn from 'classnames';
 
 import Layout from '@/layouts/default/Layout';
@@ -52,7 +53,18 @@ const Logbook: NextPage = () => {
           <BearerToken />
 
           {error && <div>Failed to load</div>}
-          {isLoading && <div>Loading...</div>}
+          {isLoading && (
+            <div className="flex">
+              <FaSpinner className="icon-spin w-6 h-6 mr-3 text-blue-500" />
+              Loading...
+            </div>
+          )}
+          {mutation.isLoading && (
+            <div className="flex">
+              <FaSpinner className="icon-spin w-6 h-6 mr-3 text-blue-500" />
+              Generate Evidence...
+            </div>
+          )}
 
           {data && (
             <div className="overflow-x-auto relative">
@@ -122,15 +134,7 @@ const Logbook: NextPage = () => {
                             await handleEvidence(row);
                           }}
                         >
-                          {row.evidenceTask ? (
-                            'Evidence'
-                          ) : (
-                            <>
-                              {mutation.isLoading
-                                ? 'Generating...'
-                                : 'Generate'}
-                            </>
-                          )}
+                          {row.evidenceTask ? 'Evidence' : 'Generate'}
                         </button>
                       </td>
                       <td className="py-3 px-2.5">

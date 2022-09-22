@@ -5,24 +5,9 @@ import { TbChevronRight, TbFileDescription } from 'react-icons/tb';
 import useSWR, { Fetcher } from 'swr';
 import moment from 'moment';
 
-const GitlabCommit: NextPage = () => {
-  const router = useRouter();
-  const { id } = router.query;
+const api = process.env.NEXT_PUBLIC_SITE_URL;
 
-  const fetcher: Fetcher<any, string> = (id) =>
-    fetch(`/api/gitlab/commit/${id}`)
-      .then((res) => res.json())
-      .then((res) => res.data);
-
-  const { data, error } = useSWR(id, fetcher);
-
-  if (error)
-    return (
-      <div className="mx-auto max-w-7xl px-4 mt-10 mb-20">Failed to load</div>
-    );
-  if (!data)
-    return <div className="mx-auto max-w-7xl px-4 mt-10 mb-20">Loading...</div>;
-
+const GitlabCommit: NextPage = ({ data }) => {
   const changes =
     data.added.length + data.modified.length + data.removed.length;
 
@@ -96,5 +81,29 @@ const GitlabCommit: NextPage = () => {
     </div>
   );
 };
+
+export async function getStaticProps({ params }) {
+  const res = await fetch(`${api}/api/gitlab/commit/${params.id}`);
+  const commits = await res.json();
+  const data = await commits.data;
+
+  return {
+    props: {
+      data,
+    },
+    revalidate: 10,
+  };
+}
+
+export async function getStaticPaths() {
+  const res = await fetch(`${api}/api/gitlab/commit`);
+  const commits = await res.json();
+  const data = await commits.data;
+
+  return {
+    paths: data.map((row) => ({ params: { id: row.id } })),
+    fallback: 'blocking',
+  };
+}
 
 export default GitlabCommit;

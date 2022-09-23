@@ -92,7 +92,7 @@ const Logbook: NextPage = () => {
                           .format('YYYY-MM-DD')}
                       </td>
                       <td className="py-3 px-2.5">
-                        {row.commit.webhook.project.name}
+                        {row.commit.webhook.project.groupwareProjectName}
                       </td>
                       <td className="py-3 px-2.5">{row.commit.title}</td>
                       <td className="py-3 px-2.5">

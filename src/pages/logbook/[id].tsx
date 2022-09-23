@@ -113,7 +113,7 @@ const LogbookDetail: NextPage = () => {
                 initialValues={{
                   id: data.id,
                   projectId: data.commit.webhook.project.groupwareProjectId,
-                  projectName: data.commit.webhook.project.name,
+                  projectName: data.commit.webhook.project.groupwareProjectName,
                   nameTask: data.commit.title,
                   tupoksiJabatanId: data.tupoksiJabatanId,
                   isMainTask: false,

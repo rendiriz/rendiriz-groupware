@@ -84,7 +84,7 @@ model GitlabWebhook {
 
 model GitlabProject {
   id                  Int             @id
-  namespaceId         Int             @unique
+  namespaceId         Int
   groupwareProjectId  String?
   description         String
   name                String
@@ -107,7 +107,7 @@ model GitlabProject {
 }
 
 model GitlabNamespace {
-  id                     Int            @id
+  id                     Int             @id
   name                   String
   path                   String
   kind                   String
@@ -121,7 +121,7 @@ model GitlabNamespace {
   plan                   String?
   trial_ends_on          String?
   trial                  Boolean?
-  project                GitlabProject?
+  project                GitlabProject[]
 }
 
 model GitlabCommit {
